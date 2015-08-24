@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: fefb7c4a550544969a31462de58a5743
+timeCreated: 1437708170
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_FingerPrefab: {fileID: 186364, guid: f31abbbbffce2423f9869314a0bc1a1f, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
