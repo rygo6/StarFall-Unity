@@ -79,10 +79,15 @@ public class Enemy : MonoBehaviourBase
 	
 	public void RecordTransformHistory(float time)
 	{
-		positionHistoryCurve.AddKey(time, transform.position);
-		rotationHistoryCurve.AddKey(time, transform.rotation);
-		velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity);
-		angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity);
+		Keyframe positionKey = new Keyframe(time, transform.position);
+		Keyframe rotationKey = new Keyframe(time, transform.rotation);
+		Keyframe velocityKey = new Keyframe(time, componentCache.rigidBody2D.velocity);
+		Keyframe angularVelocityKey = new Keyframe(time, componentCache.rigidBody2D.angularVelocity);
+
+		positionHistoryCurve.AddKey(positionKey);
+		rotationHistoryCurve.AddKey(rotationKey);
+		velocityHistoryCurve.AddKey(velocityKey);
+		angularVelocityHistoryCurve.AddKey(angularVelocityKey);
 	}
 	
 	public void EvaluateTransformHistory(float time)

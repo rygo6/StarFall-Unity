@@ -100,17 +100,34 @@ public class EnemyManager : Manager<EnemyManager>
 
 	#region MonoBehaviour
 
-	private void Start()
+	private void Awake()
 	{
+		Application.targetFrameRate = 60;
 		Time.timeScale = 0f;
 		StartCoroutine(RandomInstantiate());
+	}
+
+	private void Start()
+	{
+		StartCoroutine(LateStartCoroutine());
+	}
+
+	/// <summary>
+	/// Coroutine that will run one frame after Start
+	/// </summary>
+	private IEnumerator LateStartCoroutine()
+	{
+		yield return null;
+		time = 0f;
 	}
 		
 	private void Update()
 	{
 		SmoothTimeScaleInDirection();
+
+		time += timeScale * Time.unscaledDeltaTime;
+
 		TimeScaleSwitch();		
-		time += timeScale;
 	}
 
 	#endregion
@@ -148,11 +165,10 @@ public class EnemyManager : Manager<EnemyManager>
 				return true;
 			}
 			return false;
-		}
-		);
+		});
 
 		Vector3 position = new Vector3();
-		position.y = (topPanelCornerArray[2].y + topPanelCornerArray[0].y) / 2f;
+		position.y = topPanelCornerArray[2].y;
 		position.x = Mathf.Lerp(topPanelCornerArray[0].x, topPanelCornerArray[2].x, xScalar);
 
 		if (index == -1)
@@ -217,22 +233,30 @@ public class EnemyManager : Manager<EnemyManager>
 		
 	private void RecordEnemyHistory()
 	{
-		const float recordTimeSpacing = .5f;
+		const float recordTimeSpacing = .1f;
 		if (timeScale > 0f)
 		{
-			m_PositiveDelta += timeScale;
+			m_PositiveDelta += Time.deltaTime;
 		}
-		if (m_PositiveDelta > recordTimeSpacing)
+		Debug.Log(time+"   "+m_PositiveDelta);
+		if (m_PositiveDelta > recordTimeSpacing - Time.deltaTime)
 		{
+			Debug.Log("SET");
 			m_PositiveDelta = 0f;
 			//TODO may be smarter to make this be set iteratively over multiple frames with a coroutine
 			for (int i = 0; i < m_EnemyList.Count; ++i)
 			{
-				enemyList[i].RecordTransformHistory(time);
+				enemyList[i].RecordTransformHistory(RoundToDecimal(time, recordTimeSpacing));
 			}
 		}
 	}
 	private float m_PositiveDelta;
+
+	private float RoundToDecimal(float value, float round)
+	{
+		round = 1f / round;
+		return Mathf.Round(value * round) / round;
+	}
 
 	#endregion
 
