@@ -1,36 +1,65 @@
 using UnityEngine;
 
 [System.Serializable]
-public class AnimationCurve3 
+public class AnimationCurve3
 {
 	
 	#region Properties
 
-	private AnimationCurve x 
+	private AnimationCurve x
 	{ 
 		get { return m_X; } 
 	}
 	[SerializeField]
 	private AnimationCurve m_X = new AnimationCurve();
 
-	private AnimationCurve y 
+	private AnimationCurve y
 	{ 
 		get { return m_Y; } 
 	}
 	[SerializeField]
 	private AnimationCurve m_Y = new AnimationCurve();
 
-	private AnimationCurve z 
+	private AnimationCurve z
 	{ 
 		get { return m_Z; } 
 	}
 	[SerializeField]
 	private AnimationCurve m_Z = new AnimationCurve();
-	
+
 	#endregion
-	
+
 	#region Methods
-	
+
+	private float CalculateLinearTangent(Keyframe key, Keyframe toKey)
+	{
+		return (float)(((double)key.value - (double)toKey.value) / ((double)key.time - (double)toKey.time));
+	}
+
+	public void AddKey(float time, Vector3 point, float? inTangent, float? outTangent)
+	{
+		Keyframe xKey = new Keyframe(time, point.x);
+		Keyframe yKey = new Keyframe(time, point.y);
+		Keyframe zKey = new Keyframe(time, point.z);
+
+		if (inTangent != null)
+		{
+			xKey.inTangent = inTangent.Value;
+			yKey.inTangent = inTangent.Value;
+			zKey.inTangent = inTangent.Value;
+		}
+		if (outTangent != null)
+		{
+			xKey.outTangent = outTangent.Value;
+			yKey.outTangent = outTangent.Value;
+			zKey.outTangent = outTangent.Value;
+		}
+
+		x.AddKey(xKey);
+		y.AddKey(yKey);
+		z.AddKey(zKey);
+	}
+
 	public void AddKey(float time, Vector3 point)
 	{
 		x.AddKey(time, point.x);
@@ -70,7 +99,7 @@ public class AnimationCurve3
 	{
 		return x.keys[x.length - 1].time;
 	}
-	
+
 	#endregion
 
 }

@@ -118,6 +118,7 @@ public class EnemyManager : Manager<EnemyManager>
 	private IEnumerator LateStartCoroutine()
 	{
 		yield return null;
+		//this is a workaround to get rid of a .2f delay on first start
 		time = 0f;
 	}
 		
@@ -139,8 +140,8 @@ public class EnemyManager : Manager<EnemyManager>
 		while (true)
 		{
 			float xScalar = Random.Range(0f, 1f);
-			InstantiateOrRetrieveEnemy(xScalar, enemyPrefabArray[0]);
-			yield return new WaitForSeconds(0.1f);
+			InstantiateOrRetrieveRetiredEnemy(xScalar, enemyPrefabArray[0]);
+			yield return new WaitForSeconds(.2f);
 		}
 	}
 
@@ -149,18 +150,22 @@ public class EnemyManager : Manager<EnemyManager>
 		float y = bottomPanelCornerArray[0].y;
 		for (int i = 0; i < enemyList.Count; ++i)
 		{
-			if (enemyList[i].transform.position.y < y)
+			if (enemyList[i].transform.position.y < y &&
+			    enemyList[i].retireState == Enemy.RetireState.NotRetired)
 			{
+				enemyList[i].retireState = Enemy.RetireState.JustRetired;
 				enemyList[i].gameObject.SetActive(false);
 			}
 		}	
 	}
 		
-	private void InstantiateOrRetrieveEnemy(float xScalar, Enemy enemyPrefab)
+	private void InstantiateOrRetrieveRetiredEnemy(float xScalar, Enemy enemyPrefab)
 	{
 		int index = enemyList.FindIndex(item =>
 		{
-			if (!item.gameObject.activeSelf && item.GetType() == enemyPrefab.GetType())
+			if (!item.gameObject.activeSelf &&
+			    item.GetType() == enemyPrefab.GetType() &&
+			    item.retireState == Enemy.RetireState.Retired)
 			{
 				return true;
 			}
@@ -178,6 +183,7 @@ public class EnemyManager : Manager<EnemyManager>
 		}
 		else
 		{
+			enemyList[index].retireState = Enemy.RetireState.JustUnRetired;
 			enemyList[index].transform.position = position;
 			enemyList[index].gameObject.SetActive(true);
 		}
@@ -190,7 +196,6 @@ public class EnemyManager : Manager<EnemyManager>
 			if (m_FirstPositiveTimeScale)
 			{
 				m_FirstPositiveTimeScale = false;
-//				DeleteEnemyHistory();
 			}
 			Time.timeScale = m_TimeScale;
 			RecordEnemyHistory();
@@ -233,15 +238,14 @@ public class EnemyManager : Manager<EnemyManager>
 		
 	private void RecordEnemyHistory()
 	{
-		const float recordTimeSpacing = .1f;
+		const float recordTimeSpacing = .25f;
 		if (timeScale > 0f)
 		{
 			m_PositiveDelta += Time.deltaTime;
 		}
-		Debug.Log(time+"   "+m_PositiveDelta);
-		if (m_PositiveDelta > recordTimeSpacing - Time.deltaTime)
+		//recordTimeSpacing - Time.deltaTime so it gets close to firing on exact recordTimeSpacing intervals as possible
+		if (m_PositiveDelta > recordTimeSpacing)
 		{
-			Debug.Log("SET");
 			m_PositiveDelta = 0f;
 			//TODO may be smarter to make this be set iteratively over multiple frames with a coroutine
 			for (int i = 0; i < m_EnemyList.Count; ++i)

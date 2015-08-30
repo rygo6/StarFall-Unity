@@ -6,59 +6,76 @@ public class Enemy : MonoBehaviourBase
 {
 	
 	#region Properties
-	
-	private int level 
+
+	private int level
 	{ 
 		get { return m_Level; } 
 		set { m_Level = value; } 
 	}
 	private int m_Level;
 	
-	private AnimationCurve3 positionHistoryCurve 
+	private AnimationCurve3 positionHistoryCurve
 	{ 
 		get { return m_PositionHistoryCurve; } 
 	}
 	[SerializeField]
 	private AnimationCurve3 m_PositionHistoryCurve = new AnimationCurve3();
 	
-	private AnimationCurve4 rotationHistoryCurve 
+	private AnimationCurve4 rotationHistoryCurve
 	{ 
 		get { return m_RotationHistoryCurve; } 
 	}
 	[SerializeField]
 	private AnimationCurve4 m_RotationHistoryCurve = new AnimationCurve4();
 	
-	private AnimationCurve2 velocityHistoryCurve 
+	private AnimationCurve2 velocityHistoryCurve
 	{ 
 		get { return m_VelocityHistoryCurve; } 
 	}
 	[SerializeField]
 	private AnimationCurve2 m_VelocityHistoryCurve = new AnimationCurve2();
 	
-	private AnimationCurve angularVelocityHistoryCurve 
+	private AnimationCurve angularVelocityHistoryCurve
 	{ 
 		get { return m_AngularVelocityHistoryCurve; } 
 	}
 	[SerializeField]
 	private AnimationCurve m_AngularVelocityHistoryCurve = new AnimationCurve();
 
-	private AnimationCurve activeHistoryCurve 
+	private AnimationCurve activeHistoryCurve
 	{ 
 		get { return m_ActiveHistoryCurve; } 
 	}
 	[SerializeField]
 	private AnimationCurve m_ActiveHistoryCurve = new AnimationCurve();
-	
+
+	public RetireState retireState
+	{
+		get { return m_RetireState; }
+		set	{ m_RetireState = value; }
+	}
+	private RetireState m_RetireState;
+
+	public enum RetireState
+	{
+		NotRetired = 0,
+		JustRetired = 1,
+		PostJustRetired = 2,
+		Retired = 3,
+		JustUnRetired = 4,
+		PostJustUnRetired = 5,
+	}
+
 	#endregion
-	
+
 	#region MonoBehaviour
-	
+
 	private void Awake()
 	{
 		
 	}
 	
-	private void Start() 
+	private void Start()
 	{
 		
 	}
@@ -72,22 +89,63 @@ public class Enemy : MonoBehaviourBase
 	{
 		componentCache.spriteRenderer.color = Color.white;
 	}
-	
+
 	#endregion
-	
+
 	#region Methods
-	
+
 	public void RecordTransformHistory(float time)
 	{
-		Keyframe positionKey = new Keyframe(time, transform.position);
-		Keyframe rotationKey = new Keyframe(time, transform.rotation);
-		Keyframe velocityKey = new Keyframe(time, componentCache.rigidBody2D.velocity);
-		Keyframe angularVelocityKey = new Keyframe(time, componentCache.rigidBody2D.angularVelocity);
-
-		positionHistoryCurve.AddKey(positionKey);
-		rotationHistoryCurve.AddKey(rotationKey);
-		velocityHistoryCurve.AddKey(velocityKey);
-		angularVelocityHistoryCurve.AddKey(angularVelocityKey);
+		switch (retireState)
+		{
+		case RetireState.NotRetired:
+			positionHistoryCurve.AddKey(time, transform.position);
+			rotationHistoryCurve.AddKey(time, transform.rotation);
+			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity);
+			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity);
+			break;
+		case RetireState.JustRetired:
+			positionHistoryCurve.AddKey(time, transform.position, null, Mathf.Infinity);
+			rotationHistoryCurve.AddKey(time, transform.rotation);
+			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity);
+			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity);
+			retireState = RetireState.PostJustRetired;
+			break;
+		//PostJustRetired exists to ensure that atleast one full linear key gets placed
+		//between the JustRetired and JustUnretired keys, otherwise the smoothing between these
+		//may get messed up
+		case RetireState.PostJustRetired:
+			positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, Mathf.Infinity);
+			rotationHistoryCurve.AddKey(time, transform.rotation);
+			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity);
+			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity);
+			retireState = RetireState.Retired;
+			break;
+		case RetireState.Retired:
+			positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, Mathf.Infinity);
+			rotationHistoryCurve.AddKey(time, transform.rotation);
+			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity);
+			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity);
+			break;
+		case RetireState.JustUnRetired:
+			Debug.Log("JustUnRetired "+time+" "+transform.position);
+			positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, null);
+			rotationHistoryCurve.AddKey(time, transform.rotation);
+			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity);
+			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity);
+			retireState = RetireState.PostJustUnRetired;
+			break;
+		//PostJustUnRetired exists because keys must be added through this 
+		//method in order to not smooth the linear keyframes added in JustUnRetired state
+		case RetireState.PostJustUnRetired:
+			Debug.Log("PostJustUnRetired"+time+" "+transform.position);
+			positionHistoryCurve.AddKey(time, transform.position, null, null);
+			rotationHistoryCurve.AddKey(time, transform.rotation);
+			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity);
+			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity);
+			retireState = RetireState.NotRetired;
+			break;
+		}
 	}
 	
 	public void EvaluateTransformHistory(float time)
@@ -119,7 +177,7 @@ public class Enemy : MonoBehaviourBase
 		transform.position = position;
 		transform.rotation = rotation;		
 	}
-	
+
 	#endregion
 
 }
