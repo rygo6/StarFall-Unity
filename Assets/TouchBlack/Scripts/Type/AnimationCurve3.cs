@@ -8,24 +8,31 @@ public class AnimationCurve3
 
 	private AnimationCurve x
 	{ 
-		get { return m_X; } 
+		get { return _x; } 
 	}
 	[SerializeField]
-	private AnimationCurve m_X = new AnimationCurve();
+	private AnimationCurve _x = new AnimationCurve();
 
 	private AnimationCurve y
 	{ 
-		get { return m_Y; } 
+		get { return _y; } 
 	}
 	[SerializeField]
-	private AnimationCurve m_Y = new AnimationCurve();
+	private AnimationCurve _y = new AnimationCurve();
 
 	private AnimationCurve z
 	{ 
-		get { return m_Z; } 
+		get { return _z; } 
 	}
 	[SerializeField]
-	private AnimationCurve m_Z = new AnimationCurve();
+	private AnimationCurve _z = new AnimationCurve();
+
+	private int keyLength
+	{ 
+		get { return _keyLength; } 
+		set { _keyLength = value; } 
+	}
+	private int _keyLength;
 
 	#endregion
 
@@ -36,11 +43,11 @@ public class AnimationCurve3
 		return (float)(((double)key.value - (double)toKey.value) / ((double)key.time - (double)toKey.time));
 	}
 
-	public void AddKey(float time, Vector3 point, float? inTangent, float? outTangent)
+	public void AddKey(float time, Vector3 vector3, float? inTangent, float? outTangent)
 	{
-		Keyframe xKey = new Keyframe(time, point.x);
-		Keyframe yKey = new Keyframe(time, point.y);
-		Keyframe zKey = new Keyframe(time, point.z);
+		Keyframe xKey = new Keyframe(time, vector3.x);
+		Keyframe yKey = new Keyframe(time, vector3.y);
+		Keyframe zKey = new Keyframe(time, vector3.z);
 
 		if (inTangent != null)
 		{
@@ -58,13 +65,17 @@ public class AnimationCurve3
 		x.AddKey(xKey);
 		y.AddKey(yKey);
 		z.AddKey(zKey);
+
+		keyLength++;
 	}
 
-	public void AddKey(float time, Vector3 point)
+	public void AddKey(float time, Vector3 vector3)
 	{
-		x.AddKey(time, point.x);
-		y.AddKey(time, point.y);
-		z.AddKey(time, point.z);
+		x.AddKey(time, vector3.x);
+		y.AddKey(time, vector3.y);
+		z.AddKey(time, vector3.z);
+
+		keyLength++;
 	}
 	
 	public Vector3 Evaluate(float time)
@@ -76,25 +87,27 @@ public class AnimationCurve3
 		return vector3;
 	}
 	
-	public void DeleteAfterTime(float time)
+	public void RemoveAfterTime(float time)
 	{	
 		int deleteAferIndex = int.MaxValue;
-		for (int i = 0; i < x.keys.Length; ++i)
+		Keyframe[] keys = x.keys;
+		for (int i = 0; i < keys.Length; ++i)
 		{
-			if (x.keys[i].time > time)
+			if (keys[i].time > time)
 			{
 				deleteAferIndex = i - 1;
 				break;
 			}		
 		}
-		for (int i = x.keys.Length - 1; i > deleteAferIndex; --i)
+		for (int i = keys.Length - 1; i > deleteAferIndex; --i)
 		{
 			x.RemoveKey(i);
 			y.RemoveKey(i);
 			z.RemoveKey(i);
+			keyLength--;
 		}
 	}
-	
+
 	public float LastTime()
 	{
 		return x.keys[x.length - 1].time;

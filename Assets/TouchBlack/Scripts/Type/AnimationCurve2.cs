@@ -23,11 +23,31 @@ public class AnimationCurve2
 	#endregion
 	
 	#region Methods
-	
-	public void AddKey(float time, Vector2 point)
+
+	public void AddKey(float time, Vector2 vector2, float? inTangent, float? outTangent)
 	{
-		x.AddKey(time, point.x);
-		y.AddKey(time, point.y);
+		Keyframe xKey = new Keyframe(time, vector2.x);
+		Keyframe yKey = new Keyframe(time, vector2.y);
+
+		if (inTangent != null)
+		{
+			xKey.inTangent = inTangent.Value;
+			yKey.inTangent = inTangent.Value;
+		}
+		if (outTangent != null)
+		{
+			xKey.outTangent = outTangent.Value;
+			yKey.outTangent = outTangent.Value;
+		}
+
+		x.AddKey(xKey);
+		y.AddKey(yKey);
+	}
+
+	public void AddKey(float time, Vector2 vector2)
+	{
+		x.AddKey(time, vector2.x);
+		y.AddKey(time, vector2.y);
 	}
 	
 	public Vector3 Evaluate(float time)
@@ -38,18 +58,19 @@ public class AnimationCurve2
 		return vector2;
 	}
 	
-	public void DeleteAfterTime(float time)
+	public void RemoveAfterTime(float time)
 	{	
 		int deleteAferIndex = int.MaxValue;
-		for (int i = 0; i < x.keys.Length; ++i)
+		Keyframe[] keys = x.keys;
+		for (int i = 0; i < keys.Length; ++i)
 		{
-			if (x.keys[i].time > time)
+			if (keys[i].time > time)
 			{
 				deleteAferIndex = i - 1;
 				break;
 			}		
 		}
-		for (int i = x.keys.Length - 1; i > deleteAferIndex; --i)
+		for (int i = keys.Length - 1; i > deleteAferIndex; --i)
 		{
 			x.RemoveKey(i);
 			y.RemoveKey(i);

@@ -96,6 +96,13 @@ public class EnemyManager : Manager<EnemyManager>
 	[SerializeField]
 	private Enemy[] m_EnemyPrefabArray;
 
+	private float recordTimeSpacing
+	{ 
+		get { return m_RecordTimeSpacing; } 
+	}
+	[SerializeField]
+	private float m_RecordTimeSpacing = .25f;
+
 	#endregion
 
 	#region MonoBehaviour
@@ -196,6 +203,7 @@ public class EnemyManager : Manager<EnemyManager>
 			if (m_FirstPositiveTimeScale)
 			{
 				m_FirstPositiveTimeScale = false;
+				RemoveHistoryAfterTime(time);
 			}
 			Time.timeScale = m_TimeScale;
 			RecordEnemyHistory();
@@ -205,10 +213,17 @@ public class EnemyManager : Manager<EnemyManager>
 		{
 			if (!m_FirstPositiveTimeScale)
 			{
+				Time.timeScale = 0f;
 				m_FirstPositiveTimeScale = true;
+				//delete last key, then add a key at immediate spot
+				//to allow smooth evaluation from this point backward
+				//last key is deleted by chance the new key is placed too close
+				//to it resulting in unideal interpolation between the two
+				RemoveHistoryAfterTime(time - recordTimeSpacing);
+				AddHistoryKey(time);
 			}
-			Time.timeScale = 0f;
 			EvaluateEnemyHistory();
+			RewindEnemyHistory();
 		}
 	}
 	private bool m_FirstPositiveTimeScale = false;
@@ -216,7 +231,7 @@ public class EnemyManager : Manager<EnemyManager>
 	private void SmoothTimeScaleInDirection()
 	{
 		timeScale += timeScaleDirection * Time.unscaledDeltaTime;
-		timeScale = Mathf.Clamp(timeScale, -1f, 1f);
+		timeScale = Mathf.Clamp(timeScale, -2f, 1f);
 	}
 		
 	private void EvaluateEnemyHistory()
@@ -227,34 +242,43 @@ public class EnemyManager : Manager<EnemyManager>
 		}	
 	}
 		
-	private void DeleteEnemyHistory()
+	private void RewindEnemyHistory()
+	{
+		m_NegativeDelta -= timeScale * Time.unscaledDeltaTime;
+		if (m_NegativeDelta > recordTimeSpacing)
+		{
+			m_NegativeDelta = 0f;
+			RemoveHistoryAfterTime(time + (recordTimeSpacing * 2f));
+		}
+	}
+	private float m_NegativeDelta;
+
+	private void RemoveHistoryAfterTime(float time)
 	{
 		for (int i = 0; i < enemyList.Count; ++i)
 		{
-			enemyList[i].DeleteHistoryAfterTime(time);
-			StartCoroutine(enemyList[i].UpdatePhysicsToActualPosition());
+			enemyList[i].RemoveHistoryAfterTime(time);
 		}	
 	}
 		
 	private void RecordEnemyHistory()
 	{
-		const float recordTimeSpacing = .25f;
-		if (timeScale > 0f)
-		{
-			m_PositiveDelta += Time.deltaTime;
-		}
-		//recordTimeSpacing - Time.deltaTime so it gets close to firing on exact recordTimeSpacing intervals as possible
-		if (m_PositiveDelta > recordTimeSpacing)
+		m_PositiveDelta += Time.deltaTime;
+		if (m_PositiveDelta > recordTimeSpacing - Time.deltaTime)
 		{
 			m_PositiveDelta = 0f;
-			//TODO may be smarter to make this be set iteratively over multiple frames with a coroutine
-			for (int i = 0; i < m_EnemyList.Count; ++i)
-			{
-				enemyList[i].RecordTransformHistory(RoundToDecimal(time, recordTimeSpacing));
-			}
+			AddHistoryKey(RoundToDecimal(time, recordTimeSpacing));
 		}
 	}
 	private float m_PositiveDelta;
+
+	private void AddHistoryKey(float time)
+	{
+		for (int i = 0; i < m_EnemyList.Count; ++i)
+		{
+			enemyList[i].RecordHistory(time);
+		}
+	}
 
 	private float RoundToDecimal(float value, float round)
 	{

@@ -4,21 +4,38 @@ using System.Collections;
 static public class AnimationCurveExtension
 {
 	
-	static public void DeleteAfterTime(this AnimationCurve curve, float time)
+	static public void RemoveAfterTime(this AnimationCurve curve, float time)
 	{	
 		int deleteAferIndex = int.MaxValue;
-		for (int i = 0; i < curve.keys.Length; ++i)
+		Keyframe[] keys = curve.keys;
+		for (int i = 0; i < keys.Length; ++i)
 		{
-			if (curve.keys[i].time > time)
+			if (keys[i].time > time)
 			{
 				deleteAferIndex = i - 1;
 				break;
 			}		
 		}
-		for (int i = curve.keys.Length - 1; i > deleteAferIndex; --i)
+		for (int i = keys.Length - 1; i > deleteAferIndex; --i)
         {
 			curve.RemoveKey(i);
         }
     }
+
+	static public void AddKey(this AnimationCurve curve, float time, float value, float? inTangent, float? outTangent)
+	{
+		Keyframe key = new Keyframe(time, value);
+
+		if (inTangent != null)
+		{
+			key.inTangent = inTangent.Value;
+		}
+		if (outTangent != null)
+		{
+			key.outTangent = outTangent.Value;
+		}
+
+		curve.AddKey(key);
+	}
 	
 }
