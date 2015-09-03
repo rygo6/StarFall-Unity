@@ -182,6 +182,7 @@ public class Enemy : MonoBehaviourBase
 		velocityHistoryCurve.RemoveAfterTime(time);
 		angularVelocityHistoryCurve.RemoveAfterTime(time);
 		activeHistoryCurve.RemoveAfterTime(time);
+		retireStateHistoryCurve.RemoveAfterTime(time);
 	}
 
 	/// <summary>

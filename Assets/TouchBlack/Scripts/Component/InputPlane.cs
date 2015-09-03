@@ -27,7 +27,8 @@ public class InputPlane : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoi
 	{ 
 		get { return m_TimeScaleMultiplier; } 
 	}
-	private float m_TimeScaleMultiplier = 8f;
+	[SerializeField]
+	private float m_TimeScaleMultiplier = 4f;
 	
 	private Finger[] fingerArray
 	{

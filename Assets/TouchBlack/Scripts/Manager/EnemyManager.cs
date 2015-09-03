@@ -101,7 +101,7 @@ public class EnemyManager : Manager<EnemyManager>
 		get { return m_RecordTimeSpacing; } 
 	}
 	[SerializeField]
-	private float m_RecordTimeSpacing = .25f;
+	private float m_RecordTimeSpacing = .2f;
 
 	#endregion
 
@@ -148,7 +148,7 @@ public class EnemyManager : Manager<EnemyManager>
 		{
 			float xScalar = Random.Range(0f, 1f);
 			InstantiateOrRetrieveRetiredEnemy(xScalar, enemyPrefabArray[0]);
-			yield return new WaitForSeconds(.2f);
+			yield return new WaitForSeconds(.1f);
 		}
 	}
 
@@ -170,8 +170,7 @@ public class EnemyManager : Manager<EnemyManager>
 	{
 		int index = enemyList.FindIndex(item =>
 		{
-			if (!item.gameObject.activeSelf &&
-			    item.GetType() == enemyPrefab.GetType() &&
+			if (item.GetType() == enemyPrefab.GetType() &&
 			    item.retireState == Enemy.RetireState.Retired)
 			{
 				return true;
@@ -231,7 +230,7 @@ public class EnemyManager : Manager<EnemyManager>
 	private void SmoothTimeScaleInDirection()
 	{
 		timeScale += timeScaleDirection * Time.unscaledDeltaTime;
-		timeScale = Mathf.Clamp(timeScale, -2f, 1f);
+		timeScale = Mathf.Clamp(timeScale, -10f, 1f);
 	}
 		
 	private void EvaluateEnemyHistory()
@@ -248,6 +247,8 @@ public class EnemyManager : Manager<EnemyManager>
 		if (m_NegativeDelta > recordTimeSpacing)
 		{
 			m_NegativeDelta = 0f;
+			//recordTimeSpacing * 2f to ensure it does not delete
+			//keyframe it currently needs to smoothly interpolate on
 			RemoveHistoryAfterTime(time + (recordTimeSpacing * 2f));
 		}
 	}
@@ -264,10 +265,10 @@ public class EnemyManager : Manager<EnemyManager>
 	private void RecordEnemyHistory()
 	{
 		m_PositiveDelta += Time.deltaTime;
-		if (m_PositiveDelta > recordTimeSpacing - Time.deltaTime)
+		if (m_PositiveDelta > recordTimeSpacing)
 		{
 			m_PositiveDelta = 0f;
-			AddHistoryKey(RoundToDecimal(time, recordTimeSpacing));
+			AddHistoryKey(time);
 		}
 	}
 	private float m_PositiveDelta;

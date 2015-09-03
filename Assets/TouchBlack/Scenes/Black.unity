@@ -548,6 +548,7 @@ MonoBehaviour:
   m_EnemyList: []
   m_EnemyPrefabArray:
   - {fileID: 11475066, guid: 4d940d59c0557477f85bb2c3184a570a, type: 2}
+  m_RecordTimeSpacing: .200000003
 --- !u!4 &1099049485
 Transform:
   m_ObjectHideFlags: 0
@@ -747,6 +748,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_FingerCount: 10
   m_FingerPrefab: {fileID: 186364, guid: f31abbbbffce2423f9869314a0bc1a1f, type: 2}
+  m_TimeScaleMultiplier: 2
 --- !u!61 &1758364436
 BoxCollider2D:
   m_ObjectHideFlags: 0
