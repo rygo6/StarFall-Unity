@@ -4,108 +4,67 @@ using System.Collections.Generic;
 
 public class EnemyManager : Manager<EnemyManager>
 {
-
-	#region Properties
-
-	private RectTransform topPanelRectTransform
-	{
-		get { return m_TopPanelRectTransform; }
-	}
 	[Header("Panel from which enemies are spawned.")]
 	[SerializeField]
-	private RectTransform m_TopPanelRectTransform;
+	private RectTransform _topPanelRectTransform;
 
-	private Vector3[] topPanelCornerArray
+	private Vector3[] TopPanelCornerArray
 	{
 		get
 		{ 
-			if (m_TopPanelCornerArray == null)
+			if (_topPanelCornerArray == null)
 			{
-				m_TopPanelCornerArray = new Vector3[4];
-				topPanelRectTransform.GetWorldCorners(m_TopPanelCornerArray);
+				_topPanelCornerArray = new Vector3[4];
+				_topPanelRectTransform.GetWorldCorners(_topPanelCornerArray);
 			}
-			return m_TopPanelCornerArray; 
+			return _topPanelCornerArray; 
 		}
 	}
-	private Vector3[] m_TopPanelCornerArray;
+	private Vector3[] _topPanelCornerArray;
 
-	private RectTransform bottomPanelRectTransform
-	{
-		get { return m_BottomPanelRectTransform; }
-	}
 	[Header("Panel which enemies retire into.")]
 	[SerializeField]
-	private RectTransform m_BottomPanelRectTransform;
+	private RectTransform _bottomPanelRectTransform;
 
-	private Vector3[] bottomPanelCornerArray
+	private Vector3[] BottomPanelCornerArray
 	{
 		get
 		{ 
-			if (m_BottomPanelCornerArray == null)
+			if (_bottomPanelCornerArray == null)
 			{
-				m_BottomPanelCornerArray = new Vector3[4];
-				bottomPanelRectTransform.GetWorldCorners(m_BottomPanelCornerArray);
+				_bottomPanelCornerArray = new Vector3[4];
+				_bottomPanelRectTransform.GetWorldCorners(_bottomPanelCornerArray);
 			}
-			return m_BottomPanelCornerArray; 
+			return _bottomPanelCornerArray; 
 		}
 	}
-	private Vector3[] m_BottomPanelCornerArray;
+	private Vector3[] _bottomPanelCornerArray;
 
-	public float timeScaleDirection
-	{ 
-		get { return m_TimeScaleDirection; } 
-		set { m_TimeScaleDirection = value; } 
-	}
-	private float m_TimeScaleDirection;
+	public float TimeScaleDirection { get; set; }
 
-	private float time
+	private float CurrentTime
 	{ 
-		get { return m_Time; } 
+		get { return _currentTime; } 
 		set
 		{ 
-			if (value < 0f)
-			{
-				m_Time = 0f;
-			}
+			if (value < 0)
+				_currentTime = 0;
 			else
-			{
-				m_Time = value; 
-			}
+				_currentTime = value;
 		} 
 	}
-	private float m_Time;
+	private float _currentTime;
 
-	private float timeScale
-	{ 
-		get { return m_TimeScale; } 
-		set { m_TimeScale = value; } 
-	}
-	private float m_TimeScale;
+	private float _timeScale;
 
-	private List<Enemy> enemyList
-	{ 
-		get { return m_EnemyList; } 
-	}
 	[SerializeField]
-	private List<Enemy> m_EnemyList = new List<Enemy>();
+	private List<Enemy> _enemyList = new List<Enemy>();
 
-	private Enemy[] enemyPrefabArray
-	{ 
-		get { return m_EnemyPrefabArray; } 
-	}
 	[SerializeField]
-	private Enemy[] m_EnemyPrefabArray;
+	private Enemy[] _enemyPrefabArray;
 
-	private float recordTimeSpacing
-	{ 
-		get { return m_RecordTimeSpacing; } 
-	}
 	[SerializeField]
-	private float m_RecordTimeSpacing = .2f;
-
-	#endregion
-
-	#region MonoBehaviour
+	private float _recordTimeSpacing = .2f;
 
 	private void Awake()
 	{
@@ -126,49 +85,43 @@ public class EnemyManager : Manager<EnemyManager>
 	{
 		yield return null;
 		//this is a workaround to get rid of a .2f delay on first start
-		time = 0f;
+		CurrentTime = 0f;
 	}
 		
 	private void Update()
 	{
 		SmoothTimeScaleInDirection();
-
-		time += timeScale * Time.unscaledDeltaTime;
-
+		CurrentTime += _timeScale * Time.unscaledDeltaTime;
 		TimeScaleSwitch();		
 	}
-
-	#endregion
-
-	#region Methods
 
 	private IEnumerator RandomInstantiate()
 	{
 		while (true)
 		{
 			float xScalar = Random.Range(0f, 1f);
-			InstantiateOrRetrieveRetiredEnemy(xScalar, enemyPrefabArray[0]);
+			InstantiateOrRetrieveRetiredEnemy(xScalar, _enemyPrefabArray[0]);
 			yield return new WaitForSeconds(.1f);
 		}
 	}
 
 	private void CheckEnemyRetire()
 	{
-		float y = bottomPanelCornerArray[0].y;
-		for (int i = 0; i < enemyList.Count; ++i)
+		float y = BottomPanelCornerArray[0].y;
+		for (int i = 0; i < _enemyList.Count; ++i)
 		{
-			if (enemyList[i].transform.position.y < y &&
-			    enemyList[i].retireState == Enemy.RetireState.NotRetired)
+			if (_enemyList[i].transform.position.y < y &&
+			    _enemyList[i].retireState == Enemy.RetireState.NotRetired)
 			{
-				enemyList[i].retireState = Enemy.RetireState.JustRetired;
-				enemyList[i].gameObject.SetActive(false);
+				_enemyList[i].retireState = Enemy.RetireState.JustRetired;
+				_enemyList[i].gameObject.SetActive(false);
 			}
 		}	
 	}
 		
 	private void InstantiateOrRetrieveRetiredEnemy(float xScalar, Enemy enemyPrefab)
 	{
-		int index = enemyList.FindIndex(item =>
+		int index = _enemyList.FindIndex(item =>
 		{
 			if (item.GetType() == enemyPrefab.GetType() &&
 			    item.retireState == Enemy.RetireState.Retired)
@@ -179,105 +132,106 @@ public class EnemyManager : Manager<EnemyManager>
 		});
 
 		Vector3 position = new Vector3();
-		position.y = topPanelCornerArray[2].y;
-		position.x = Mathf.Lerp(topPanelCornerArray[0].x, topPanelCornerArray[2].x, xScalar);
+		position.y = TopPanelCornerArray[2].y;
+		position.x = Mathf.Lerp(TopPanelCornerArray[0].x, TopPanelCornerArray[2].x, xScalar);
 
 		if (index == -1)
 		{
 			Enemy enemy = Instantiate(enemyPrefab, position, Quaternion.identity) as Enemy;
-			enemyList.Add(enemy);
+			_enemyList.Add(enemy);
 		}
 		else
 		{
-			enemyList[index].retireState = Enemy.RetireState.JustUnRetired;
-			enemyList[index].transform.position = position;
-			enemyList[index].gameObject.SetActive(true);
+			_enemyList[index].retireState = Enemy.RetireState.JustUnRetired;
+			_enemyList[index].transform.position = position;
+			_enemyList[index].gameObject.SetActive(true);
 		}
 	}
 		
 	private void TimeScaleSwitch()
 	{
-		if (timeScale > 0f)
+		if (_timeScale > 0f)
 		{
-			if (m_FirstPositiveTimeScale)
+			if (_firstPositiveTimeScale)
 			{
-				m_FirstPositiveTimeScale = false;
-				RemoveHistoryAfterTime(time);
+				_firstPositiveTimeScale = false;
+				RemoveHistoryAfterTime(CurrentTime);
 			}
-			Time.timeScale = m_TimeScale;
+			Time.timeScale = _timeScale;
 			RecordEnemyHistory();
 			CheckEnemyRetire();
 		}
-		else if (timeScale < 0f)
+		else if (_timeScale < 0f)
 		{
-			if (!m_FirstPositiveTimeScale)
+			if (!_firstPositiveTimeScale)
 			{
 				Time.timeScale = 0f;
-				m_FirstPositiveTimeScale = true;
-				//delete last key, then add a key at immediate spot
+				_firstPositiveTimeScale = true;
+				//then add a key at immediate spot
 				//to allow smooth evaluation from this point backward
-				//last key is deleted by chance the new key is placed too close
-				//to it resulting in unideal interpolation between the two
-				RemoveHistoryAfterTime(time - recordTimeSpacing);
-				AddHistoryKey(time);
+				AddHistoryKey(CurrentTime);
 			}
 			EvaluateEnemyHistory();
 			RewindEnemyHistory();
 		}
 	}
-	private bool m_FirstPositiveTimeScale = false;
+	private bool _firstPositiveTimeScale = false;
 
 	private void SmoothTimeScaleInDirection()
 	{
-		timeScale += timeScaleDirection * Time.unscaledDeltaTime;
-		timeScale = Mathf.Clamp(timeScale, -10f, 1f);
+		//return from rewind faster
+		if (TimeScaleDirection > 0f && _timeScale < 0f)
+			_timeScale += TimeScaleDirection * Time.unscaledDeltaTime * 6f;
+		else
+			_timeScale += TimeScaleDirection * Time.unscaledDeltaTime;
+		_timeScale = Mathf.Clamp(_timeScale, -10f, 1f);
 	}
 		
 	private void EvaluateEnemyHistory()
 	{
-		for (int i = 0; i < enemyList.Count; ++i)
+		for (int i = 0; i < _enemyList.Count; ++i)
 		{
-			enemyList[i].EvaluateTransformHistory(time);
+			_enemyList[i].EvaluateTransformHistory(CurrentTime);
 		}	
 	}
 		
 	private void RewindEnemyHistory()
 	{
-		m_NegativeDelta -= timeScale * Time.unscaledDeltaTime;
-		if (m_NegativeDelta > recordTimeSpacing)
+		m_NegativeDelta -= _timeScale * Time.unscaledDeltaTime;
+		if (m_NegativeDelta > _recordTimeSpacing)
 		{
 			m_NegativeDelta = 0f;
 			//recordTimeSpacing * 2f to ensure it does not delete
 			//keyframe it currently needs to smoothly interpolate on
-			RemoveHistoryAfterTime(time + (recordTimeSpacing * 2f));
+			RemoveHistoryAfterTime(CurrentTime + (_recordTimeSpacing * 2f));
 		}
 	}
 	private float m_NegativeDelta;
 
 	private void RemoveHistoryAfterTime(float time)
 	{
-		for (int i = 0; i < enemyList.Count; ++i)
+		for (int i = 0; i < _enemyList.Count; ++i)
 		{
-			enemyList[i].RemoveHistoryAfterTime(time);
+			_enemyList[i].RemoveHistoryAfterTime(time);
 		}	
 	}
 		
 	private void RecordEnemyHistory()
 	{
 		m_PositiveDelta += Time.deltaTime;
-		if (m_PositiveDelta > recordTimeSpacing)
+		if (m_PositiveDelta > _recordTimeSpacing)
 		{
 			m_PositiveDelta = 0f;
-			AddHistoryKey(time);
+			AddHistoryKey(CurrentTime);
 		}
 	}
 	private float m_PositiveDelta;
 
 	private void AddHistoryKey(float time)
 	{
-		for (int i = 0; i < m_EnemyList.Count; ++i)
+		for (int i = 0; i < _enemyList.Count; ++i)
 		{
-			enemyList[i].RecordHistory(time);
+			_enemyList[i].RecordHistory(time);
 		}
 	}
 
@@ -286,7 +240,4 @@ public class EnemyManager : Manager<EnemyManager>
 		round = 1f / round;
 		return Mathf.Round(value * round) / round;
 	}
-
-	#endregion
-
 }

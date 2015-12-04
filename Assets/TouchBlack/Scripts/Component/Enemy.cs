@@ -106,55 +106,66 @@ public class Enemy : MonoBehaviourBase
 		switch (retireState)
 		{
 		case RetireState.NotRetired:
+//			Debug.Log("NotRetired");
 			positionHistoryCurve.AddKey(time, transform.position);
 			rotationHistoryCurve.AddKey(time, transform.rotation);
 			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity);
 			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity);
+			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
 			break;
 		case RetireState.JustRetired:
+//			Debug.Log("JustRetired");			
 			positionHistoryCurve.AddKey(time, transform.position, null, Mathf.Infinity);
 			rotationHistoryCurve.AddKey(time, transform.rotation, null, Mathf.Infinity);
 			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, null, Mathf.Infinity);
 			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, null, Mathf.Infinity);
+			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
 			retireState = RetireState.PostJustRetired;
 			break;
 		//PostJustRetired exists to ensure that atleast one full linear key gets placed
 		//between the JustRetired and JustUnretired keys, otherwise the smoothing between these
 		//may get messed up
 		case RetireState.PostJustRetired:
+//			Debug.Log("PostJustRetired");		
 			positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, Mathf.Infinity);
 			rotationHistoryCurve.AddKey(time, transform.rotation, Mathf.Infinity, Mathf.Infinity);
 			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, Mathf.Infinity, Mathf.Infinity);
 			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, Mathf.Infinity, Mathf.Infinity);
+			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
 			retireState = RetireState.Retired;
 			break;
 		case RetireState.Retired:
+//			Debug.Log("Retired");	
 			positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, Mathf.Infinity);
 			rotationHistoryCurve.AddKey(time, transform.rotation, Mathf.Infinity, Mathf.Infinity);
 			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, Mathf.Infinity, Mathf.Infinity);
 			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, Mathf.Infinity, Mathf.Infinity);
+			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
 			break;
 		case RetireState.JustUnRetired:
+//			Debug.Log("JustUnRetired");	
 			positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, null);
 			rotationHistoryCurve.AddKey(time, transform.rotation, Mathf.Infinity, null);
 			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, Mathf.Infinity, null);
 			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, Mathf.Infinity, null);
+			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
 			retireState = RetireState.PostJustUnRetired;
 			break;
 		//PostJustUnRetired exists because keys must be added through this 
 		//method in order to not smooth the linear keyframes added in JustUnRetired state
 		case RetireState.PostJustUnRetired:
+//			Debug.Log("PostJustUnRetired");	
 			positionHistoryCurve.AddKey(time, transform.position, null, null);
 			rotationHistoryCurve.AddKey(time, transform.rotation, null, null);
 			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, null, null);
 			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, null, null);
+			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
 			retireState = RetireState.NotRetired;
 			break;
 		}
 
 		//always record active state and record state in linear
 		activeHistoryCurve.AddKey(time, System.Convert.ToInt32(gameObject.activeSelf), Mathf.Infinity, Mathf.Infinity);
-		retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
 	}
 	
 	public void EvaluateTransformHistory(float time)

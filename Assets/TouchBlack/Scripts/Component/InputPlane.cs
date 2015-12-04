@@ -64,7 +64,7 @@ public class InputPlane : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoi
 
 	public void OnPointerDown(PointerEventData eventData)
 	{
-		EnemyManager.sharedManager.timeScaleDirection = timeScaleMultiplier;
+		EnemyManager.sharedManager.TimeScaleDirection = timeScaleMultiplier;
 	
 		int id = eventData.pointerId.NoNegative();
 		fingerArray[id].gameObject.SetActive(true);
@@ -80,7 +80,7 @@ public class InputPlane : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoi
 	
 	public void OnPointerUp(PointerEventData eventData)
 	{
-		EnemyManager.sharedManager.timeScaleDirection = -timeScaleMultiplier;
+		EnemyManager.sharedManager.TimeScaleDirection = -timeScaleMultiplier;
 	
 		int id = eventData.pointerId.NoNegative();
 		fingerArray[id].gameObject.SetActive(false);		
