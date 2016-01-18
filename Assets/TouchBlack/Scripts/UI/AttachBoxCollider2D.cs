@@ -1,15 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class AttachBoxCollider2D : MonoBehaviourBase
+public class AttachBoxCollider2D : MonoBehaviour
 {
+	private BoxCollider2D _boxCollider2D;
 
-	private BoxCollider2D boxCollider2D
+	private readonly Vector3[] _cornerArray = new Vector3[4];
+
+	private RectTransform _rectTransform;
+
+	private void Awake()
 	{
-		get { return m_BoxCollider2D; }
+		_boxCollider2D = GetComponentInChildren<BoxCollider2D>();
+		_rectTransform = GetComponent<RectTransform>();
 	}
-	[SerializeField]
-	private BoxCollider2D m_BoxCollider2D;
 
 	private void Update()
 	{
@@ -18,10 +22,8 @@ public class AttachBoxCollider2D : MonoBehaviourBase
 
 	private void UpdateBoxCollider2D()
 	{
-		componentCache.rectTransform.GetWorldCorners(m_cornerArray);
-		boxCollider2D.size = new Vector2(m_cornerArray [2].x - m_cornerArray [0].x, m_cornerArray [2].y - m_cornerArray [0].y);
-		boxCollider2D.transform.position = componentCache.rectTransform.position;
+		_rectTransform.GetWorldCorners(_cornerArray);
+		_boxCollider2D.size = new Vector2(_cornerArray [2].x - _cornerArray [0].x, _cornerArray [2].y - _cornerArray [0].y);
+		_boxCollider2D.transform.position = _rectTransform.position;
 	}
-	private Vector3[] m_cornerArray = new Vector3[4];
-
 }

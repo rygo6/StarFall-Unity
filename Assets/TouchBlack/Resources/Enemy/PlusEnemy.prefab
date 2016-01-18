@@ -14,7 +14,7 @@ GameObject:
   - 114: {fileID: 11475066}
   m_Layer: 9
   m_Name: PlusEnemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -79,23 +79,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a65e90c716b84c9fb1ba14cd1371913, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_PositionHistoryCurve:
-    m_X:
+  _positionHistoryCurve:
+    _x:
       serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
-    m_Y:
+    _y:
       serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
-    m_Z:
+    _z:
       serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
-  m_RotationHistoryCurve:
+  _rotationHistoryCurve:
     m_X:
       serializedVersion: 2
       m_Curve: []
@@ -116,7 +116,7 @@ MonoBehaviour:
       m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
-  m_VelocityHistoryCurve:
+  _velocityHistoryCurve:
     m_X:
       serializedVersion: 2
       m_Curve: []
@@ -127,12 +127,17 @@ MonoBehaviour:
       m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
-  m_AngularVelocityHistoryCurve:
+  _angularVelocityHistoryCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
     m_PostInfinity: 2
-  m_ActiveHistoryCurve:
+  _activeHistoryCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  _retireStateHistoryCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
@@ -155,7 +160,9 @@ SpriteRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
   m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_MinimumChartSize: 4
   m_AutoUVMaxDistance: .5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
@@ -169,7 +176,23 @@ Prefab:
   serializedVersion: 2
   m_Modification:
     m_TransformParent: {fileID: 0}
-    m_Modifications: []
+    m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 101336}

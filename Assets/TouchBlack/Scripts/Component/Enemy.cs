@@ -2,84 +2,36 @@
 using System.Collections;
 using UnityEngine.EventSystems;
 
-public class Enemy : MonoBehaviourBase
+
+public class Enemy : MonoBehaviour
 {
-	
-	#region Properties
+	private int _level;
 
-	private int level
-	{ 
-		get { return m_Level; } 
-		set { m_Level = value; } 
-	}
-	private int m_Level;
-	
-	private AnimationCurve3 positionHistoryCurve
-	{ 
-		get { return m_PositionHistoryCurve; } 
-	}
 	[SerializeField]
-	private AnimationCurve3 m_PositionHistoryCurve = new AnimationCurve3();
-	
-	private AnimationCurve4 rotationHistoryCurve
-	{ 
-		get { return m_RotationHistoryCurve; } 
-	}
+	private AnimationCurve3 _positionHistoryCurve = new AnimationCurve3();
+
 	[SerializeField]
-	private AnimationCurve4 m_RotationHistoryCurve = new AnimationCurve4();
-	
-	private AnimationCurve2 velocityHistoryCurve
-	{ 
-		get { return m_VelocityHistoryCurve; } 
-	}
+	private AnimationCurve4 _rotationHistoryCurve = new AnimationCurve4();
+
 	[SerializeField]
-	private AnimationCurve2 m_VelocityHistoryCurve = new AnimationCurve2();
-	
-	private AnimationCurve angularVelocityHistoryCurve
-	{ 
-		get { return m_AngularVelocityHistoryCurve; } 
-	}
+	private AnimationCurve2 _velocityHistoryCurve = new AnimationCurve2();
+
 	[SerializeField]
-	private AnimationCurve m_AngularVelocityHistoryCurve = new AnimationCurve();
+	private AnimationCurve _angularVelocityHistoryCurve = new AnimationCurve();
 
-	private AnimationCurve activeHistoryCurve
-	{ 
-		get { return m_ActiveHistoryCurve; } 
-	}
 	[SerializeField]
-	private AnimationCurve m_ActiveHistoryCurve = new AnimationCurve();
+	private AnimationCurve _activeHistoryCurve = new AnimationCurve();
 
-	private AnimationCurve retireStateHistoryCurve
-	{ 
-		get { return m_RetireStateHistoryCurve; } 
-	}
 	[SerializeField]
-	private AnimationCurve m_RetireStateHistoryCurve = new AnimationCurve();
+	private AnimationCurve _retireStateHistoryCurve = new AnimationCurve();
 
-	public RetireState retireState
-	{
-		get { return m_RetireState; }
-		set	{ m_RetireState = value; }
-	}
-	private RetireState m_RetireState;
+	public RetireState RetireState { get; set; }
 
-	public enum RetireState
-	{
-		NotRetired = 0,
-		JustRetired = 1,
-		PostJustRetired = 2,
-		Retired = 3,
-		JustUnRetired = 4,
-		PostJustUnRetired = 5,
-	}
-
-	#endregion
-
-	#region MonoBehaviour
+	private Rigidbody2D _rigidBody2D;
 
 	private void Awake()
 	{
-		
+		_rigidBody2D = GetComponent<Rigidbody2D>();
 	}
 	
 	private void Start()
@@ -89,111 +41,111 @@ public class Enemy : MonoBehaviourBase
 
 	public void OnCollisionEnter2D(Collision2D collision)
 	{
-		componentCache.spriteRenderer.color = Color.red;
+
 	}
 
 	public void OnCollisionExit2D(Collision2D collision)
 	{
-		componentCache.spriteRenderer.color = Color.white;
+
 	}
 
-	#endregion
-
-	#region Methods
 
 	public void RecordHistory(float time)
 	{
-		switch (retireState)
+		switch (RetireState)
 		{
 		case RetireState.NotRetired:
 //			Debug.Log("NotRetired");
-			positionHistoryCurve.AddKey(time, transform.position);
-			rotationHistoryCurve.AddKey(time, transform.rotation);
-			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity);
-			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity);
-			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
+			_positionHistoryCurve.AddKey(time, transform.position);
+			_rotationHistoryCurve.AddKey(time, transform.rotation);
+			_velocityHistoryCurve.AddKey(time, _rigidBody2D.velocity);
+			_angularVelocityHistoryCurve.AddKey(time, _rigidBody2D.angularVelocity);
+			_retireStateHistoryCurve.AddKey(time, (float)RetireState, Mathf.Infinity, Mathf.Infinity);
 			break;
 		case RetireState.JustRetired:
 //			Debug.Log("JustRetired");			
-			positionHistoryCurve.AddKey(time, transform.position, null, Mathf.Infinity);
-			rotationHistoryCurve.AddKey(time, transform.rotation, null, Mathf.Infinity);
-			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, null, Mathf.Infinity);
-			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, null, Mathf.Infinity);
-			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
-			retireState = RetireState.PostJustRetired;
+			_positionHistoryCurve.AddKey(time, transform.position, null, Mathf.Infinity);
+			_rotationHistoryCurve.AddKey(time, transform.rotation, null, Mathf.Infinity);
+			_velocityHistoryCurve.AddKey(time, _rigidBody2D.velocity, null, Mathf.Infinity);
+			_angularVelocityHistoryCurve.AddKey(time, _rigidBody2D.angularVelocity, null, Mathf.Infinity);
+			_retireStateHistoryCurve.AddKey(time, (float)RetireState, Mathf.Infinity, Mathf.Infinity);
+			RetireState = RetireState.PostJustRetired;
 			break;
 		//PostJustRetired exists to ensure that atleast one full linear key gets placed
 		//between the JustRetired and JustUnretired keys, otherwise the smoothing between these
 		//may get messed up
 		case RetireState.PostJustRetired:
 //			Debug.Log("PostJustRetired");		
-			positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, Mathf.Infinity);
-			rotationHistoryCurve.AddKey(time, transform.rotation, Mathf.Infinity, Mathf.Infinity);
-			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, Mathf.Infinity, Mathf.Infinity);
-			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, Mathf.Infinity, Mathf.Infinity);
-			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
-			retireState = RetireState.Retired;
+			_positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, Mathf.Infinity);
+			_rotationHistoryCurve.AddKey(time, transform.rotation, Mathf.Infinity, Mathf.Infinity);
+			_velocityHistoryCurve.AddKey(time, _rigidBody2D.velocity, Mathf.Infinity, Mathf.Infinity);
+			_angularVelocityHistoryCurve.AddKey(time, _rigidBody2D.angularVelocity, Mathf.Infinity, Mathf.Infinity);
+			_retireStateHistoryCurve.AddKey(time, (float)RetireState, Mathf.Infinity, Mathf.Infinity);
+			RetireState = RetireState.Retired;
 			break;
 		case RetireState.Retired:
 //			Debug.Log("Retired");	
-			positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, Mathf.Infinity);
-			rotationHistoryCurve.AddKey(time, transform.rotation, Mathf.Infinity, Mathf.Infinity);
-			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, Mathf.Infinity, Mathf.Infinity);
-			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, Mathf.Infinity, Mathf.Infinity);
-			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
+			_positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, Mathf.Infinity);
+			_rotationHistoryCurve.AddKey(time, transform.rotation, Mathf.Infinity, Mathf.Infinity);
+			_velocityHistoryCurve.AddKey(time, _rigidBody2D.velocity, Mathf.Infinity, Mathf.Infinity);
+			_angularVelocityHistoryCurve.AddKey(time, _rigidBody2D.angularVelocity, Mathf.Infinity, Mathf.Infinity);
+			_retireStateHistoryCurve.AddKey(time, (float)RetireState, Mathf.Infinity, Mathf.Infinity);
 			break;
 		case RetireState.JustUnRetired:
 //			Debug.Log("JustUnRetired");	
-			positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, null);
-			rotationHistoryCurve.AddKey(time, transform.rotation, Mathf.Infinity, null);
-			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, Mathf.Infinity, null);
-			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, Mathf.Infinity, null);
-			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
-			retireState = RetireState.PostJustUnRetired;
+			_positionHistoryCurve.AddKey(time, transform.position, Mathf.Infinity, null);
+			_rotationHistoryCurve.AddKey(time, transform.rotation, Mathf.Infinity, null);
+			_velocityHistoryCurve.AddKey(time, _rigidBody2D.velocity, Mathf.Infinity, null);
+			_angularVelocityHistoryCurve.AddKey(time, _rigidBody2D.angularVelocity, Mathf.Infinity, null);
+			_retireStateHistoryCurve.AddKey(time, (float)RetireState, Mathf.Infinity, Mathf.Infinity);
+			RetireState = RetireState.PostJustUnRetired;
 			break;
 		//PostJustUnRetired exists because keys must be added through this 
 		//method in order to not smooth the linear keyframes added in JustUnRetired state
 		case RetireState.PostJustUnRetired:
 //			Debug.Log("PostJustUnRetired");	
-			positionHistoryCurve.AddKey(time, transform.position, null, null);
-			rotationHistoryCurve.AddKey(time, transform.rotation, null, null);
-			velocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.velocity, null, null);
-			angularVelocityHistoryCurve.AddKey(time, componentCache.rigidBody2D.angularVelocity, null, null);
-			retireStateHistoryCurve.AddKey(time, (float)retireState, Mathf.Infinity, Mathf.Infinity);
-			retireState = RetireState.NotRetired;
+			_positionHistoryCurve.AddKey(time, transform.position, null, null);
+			_rotationHistoryCurve.AddKey(time, transform.rotation, null, null);
+			_velocityHistoryCurve.AddKey(time, _rigidBody2D.velocity, null, null);
+			_angularVelocityHistoryCurve.AddKey(time, _rigidBody2D.angularVelocity, null, null);
+			_retireStateHistoryCurve.AddKey(time, (float)RetireState, Mathf.Infinity, Mathf.Infinity);
+			RetireState = RetireState.NotRetired;
 			break;
 		}
 
 		//always record active state and record state in linear
-		activeHistoryCurve.AddKey(time, System.Convert.ToInt32(gameObject.activeSelf), Mathf.Infinity, Mathf.Infinity);
+		_activeHistoryCurve.AddKey(time, System.Convert.ToInt32(gameObject.activeSelf), Mathf.Infinity, Mathf.Infinity);
 	}
 	
 	public void EvaluateTransformHistory(float time)
 	{
-		transform.position = positionHistoryCurve.Evaluate(time);
-		transform.rotation = rotationHistoryCurve.Evaluate(time);
-		componentCache.rigidBody2D.velocity = velocityHistoryCurve.Evaluate(time);
-		componentCache.rigidBody2D.angularVelocity = angularVelocityHistoryCurve.Evaluate(time);
-		bool curveActiveState = System.Convert.ToBoolean(activeHistoryCurve.Evaluate(time));
+		transform.position = _positionHistoryCurve.Evaluate(time);
+		transform.rotation = _rotationHistoryCurve.Evaluate(time);
+		_rigidBody2D.velocity = _velocityHistoryCurve.Evaluate(time);
+		_rigidBody2D.angularVelocity = _angularVelocityHistoryCurve.Evaluate(time);
+		bool curveActiveState = System.Convert.ToBoolean(_activeHistoryCurve.Evaluate(time));
 		if (gameObject.activeSelf != curveActiveState)
 		{
 			gameObject.SetActive(curveActiveState);
 		}
-		RetireState curveRetireState = (RetireState)Mathf.RoundToInt(retireStateHistoryCurve.Evaluate(time));
-		if (retireState != curveRetireState)
+		RetireState curveRetireState = (RetireState)Mathf.RoundToInt(_retireStateHistoryCurve.Evaluate(time));
+		if (RetireState != curveRetireState)
 		{
-			retireState = curveRetireState;
+			RetireState = curveRetireState;
 		}
+		//force retire if begining
+		if (time == 0f)
+			RetireState = RetireState.Retired;
 	}
 	
 	public void RemoveHistoryAfterTime(float time)
 	{
-		positionHistoryCurve.RemoveAfterTime(time);
-		rotationHistoryCurve.RemoveAfterTime(time);
-		velocityHistoryCurve.RemoveAfterTime(time);
-		angularVelocityHistoryCurve.RemoveAfterTime(time);
-		activeHistoryCurve.RemoveAfterTime(time);
-		retireStateHistoryCurve.RemoveAfterTime(time);
+		_positionHistoryCurve.RemoveAfterTime(time);
+		_rotationHistoryCurve.RemoveAfterTime(time);
+		_velocityHistoryCurve.RemoveAfterTime(time);
+		_angularVelocityHistoryCurve.RemoveAfterTime(time);
+		_activeHistoryCurve.RemoveAfterTime(time);
+		_retireStateHistoryCurve.RemoveAfterTime(time);
 	}
 
 	/// <summary>
@@ -209,7 +161,4 @@ public class Enemy : MonoBehaviourBase
 		transform.position = position;
 		transform.rotation = rotation;		
 	}
-
-	#endregion
-
 }
