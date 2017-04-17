@@ -12,5 +12,5 @@ This project contains in it examples of:
 - How to implement an object pool.
 - How to record the movements of 2D physics objects and play them back at variable speeds.
 
-Play a WebGL of this experimental game here:
+Play a WebGL build of this experimental game here:
 http://ryangoodrich.info/HoldBlack
