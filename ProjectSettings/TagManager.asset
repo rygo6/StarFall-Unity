@@ -5,9 +5,6 @@ TagManager:
   serializedVersion: 2
   tags:
   - Enemy
-  - GameTime
-  - EnemyPool
-  - EventSystem
   layers:
   - Default
   - TransparentFX
